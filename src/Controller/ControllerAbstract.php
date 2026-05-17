@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\Controller;
 
 /** Contrôleur de base : gestion des paramètres de route et du code HTTP de réponse. */

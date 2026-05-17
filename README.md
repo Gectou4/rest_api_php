@@ -92,22 +92,49 @@ class MyClass extends ControllerAbstract
 
 ### Prérequis
 
-- PHP 8.3+
-- MySQL 5.7+ / MariaDB 10.4+
+- PHP 8.3+ **ou** Docker
+- MySQL 5.7+ / MariaDB 10.4+ **ou** Docker Compose
 - Composer
 
-### Installation
+### Installation locale
 
 ```bash
 composer install
 ```
 
+### Lancement local
+
+```bash
+php -S localhost:8000 -t public
+```
+
+### Avec Docker (recommandé)
+
+```bash
+# Lancer l'API + MySQL
+docker compose up -d
+
+# Voir les logs
+docker compose logs -f app
+
+# Arrêter
+docker compose down
+```
+
+L'API est accessible sur `http://localhost:8080`.
+
 ### Tests
 
-Les tests nécessitent une connexion base de données valide.
+**Local** (nécessite une DB MySQL locale) :
 
 ```bash
 composer exec phpunit
+```
+
+**Avec Docker** (isolé, pas besoin de MySQL local) :
+
+```bash
+docker compose --profile test up test
 ```
 
 ### Format de réponse

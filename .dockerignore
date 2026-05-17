@@ -1,6 +1,5 @@
 vendor/
-*.phar
+phpunit.phar
 .env
-.env.local
 *.log
 .docker/

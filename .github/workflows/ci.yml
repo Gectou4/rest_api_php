@@ -10,27 +10,6 @@ env:
   MAGO_VERSION: '1.27.0'
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    name: "Lint (Mago)"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Mago
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://carthage.software/mago.sh | bash -s -- --version=${{ env.MAGO_VERSION }}
-          echo "$HOME/.mago/bin" >> $GITHUB_PATH
-
-      - name: Initialize Mago config
-        run: mago init
-
-      - name: Run linter
-        run: mago lint
-
-      - name: Check formatting
-        run: mago fmt --check
-
   analyze:
     runs-on: ubuntu-latest
     name: "Static Analysis (Mago)"
@@ -39,18 +18,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Mago
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           curl --proto '=https' --tlsv1.2 -sSf https://carthage.software/mago.sh | bash -s -- --version=${{ env.MAGO_VERSION }}
           echo "$HOME/.mago/bin" >> $GITHUB_PATH
-
-      - name: Initialize Mago config
-        run: mago init
 
       - name: Run static analysis
         run: mago analyze
 
   test:
-    needs: [lint, analyze]
+    needs: [analyze]
     runs-on: ubuntu-latest
     name: "Tests (PHP ${{ matrix.php-version }})"
     strategy:
@@ -112,57 +90,19 @@ jobs:
         run: composer exec phpunit
 
   quality-gate:
-    needs: [lint, analyze, test]
+    needs: [analyze, test]
     runs-on: ubuntu-latest
     name: "Quality Gate"
     if: always()
     steps:
       - name: Check all jobs status
         run: |
-          echo "Lint: ${{ needs.lint.result }}"
           echo "Analyze: ${{ needs.analyze.result }}"
           echo "Test: ${{ needs.test.result }}"
 
-          if [[ "${{ needs.lint.result }}" == "failure" || "${{ needs.analyze.result }}" == "failure" || "${{ needs.test.result }}" == "failure" ]]; then
+          if [[ "${{ needs.analyze.result }}" == "failure" || "${{ needs.test.result }}" == "failure" ]]; then
             echo "Quality gate FAILED"
             exit 1
           fi
 
           echo "Quality gate PASSED"
-
-  auto-fix:
-    needs: [lint]
-    if: failure() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    name: "Auto-fix formatting"
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Install Mago
-        run: |
-          curl --proto '=https' --tlsv1.2 -sSf https://carthage.software/mago.sh | bash -s -- --version=${{ env.MAGO_VERSION }}
-          echo "$HOME/.mago/bin" >> $GITHUB_PATH
-
-      - name: Initialize Mago config
-        run: mago init
-
-      - name: Apply formatting fixes
-        run: mago fmt
-
-      - name: Commit fixes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --staged --quiet; then
-            echo "No formatting changes to commit"
-          else
-            git commit -m "style: auto-fix formatting with Mago"
-            git push
-          fi

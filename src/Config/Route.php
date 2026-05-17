@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\Config;
 
 use G4\Api\App\Router;
@@ -13,26 +16,12 @@ class Route
     public static function load(Router $router): void
     {
         $router
-            ->match('GET', '/user/(\d+)', function (string $id): array {
-                return ['controller' => 'User', 'action' => 'Index', 'params' => ['id' => $id]];
-            })
-            ->match('GET', '/user/(\d+)/task', function (string $id): array {
-                return ['controller' => 'User', 'action' => 'userTask', 'params' => ['id' => $id]];
-            })
-            ->match('POST|PUT', '/user/(\d+)/task/(\d+)', function (string $userId, string $taskId): array {
-                return ['controller' => 'Task', 'action' => 'addTaskToUser', 'params' => ['userId' => $userId, 'taskId' => $taskId]];
-            })
-            ->match('POST|PUT', '/task', function (): array {
-                return ['controller' => 'Task', 'action' => 'addTask'];
-            })
-            ->match('POST|PUT', '/task/(\d+)', function (string $id): array {
-                return ['controller' => 'Task', 'action' => 'editTask', 'params' => ['id' => $id]];
-            })
-            ->match('DELETE', '/task/(\d+)', function (string $id): array {
-                return ['controller' => 'Task', 'action' => 'task', 'params' => ['id' => $id]];
-            })
-            ->match('DELETE', '/user/(\d+)/task/(\d+)', function (string $userId, string $taskId): array {
-                return ['controller' => 'Task', 'action' => 'userTask', 'params' => ['userId' => $userId, 'taskId' => $taskId]];
-            });
+            ->match('GET', '/user/(\d+)', fn(string $id): array => ['controller' => 'User', 'action' => 'Index', 'params' => ['id' => $id]])
+            ->match('GET', '/user/(\d+)/task', fn(string $id): array => ['controller' => 'User', 'action' => 'userTask', 'params' => ['id' => $id]])
+            ->match('POST|PUT', '/user/(\d+)/task/(\d+)', fn(string $userId, string $taskId): array => ['controller' => 'Task', 'action' => 'addTaskToUser', 'params' => ['userId' => $userId, 'taskId' => $taskId]])
+            ->match('POST|PUT', '/task', fn(): array => ['controller' => 'Task', 'action' => 'addTask'])
+            ->match('POST|PUT', '/task/(\d+)', fn(string $id): array => ['controller' => 'Task', 'action' => 'editTask', 'params' => ['id' => $id]])
+            ->match('DELETE', '/task/(\d+)', fn(string $id): array => ['controller' => 'Task', 'action' => 'task', 'params' => ['id' => $id]])
+            ->match('DELETE', '/user/(\d+)/task/(\d+)', fn(string $userId, string $taskId): array => ['controller' => 'Task', 'action' => 'userTask', 'params' => ['userId' => $userId, 'taskId' => $taskId]]);
     }
 }

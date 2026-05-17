@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\Model;
 
 enum TaskStatus: int

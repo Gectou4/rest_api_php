@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\App;
 
 /**
@@ -12,7 +15,7 @@ abstract class MultitonAbstract
     /** Retourne l'instance associée à la clé donnée, en la créant si elle n'existe pas encore. */
     public static function getInstance(string $key): static
     {
-        if (!isset(static::$instances[$key])) {
+        if (!array_key_exists($key, static::$instances)) {
             static::$instances[$key] = new static();
         }
         return static::$instances[$key];
@@ -26,7 +29,7 @@ abstract class MultitonAbstract
      * Empêche la désérialisation de l'instance.
      * @throws \Exception dans tous les cas.
      */
-    private function __wakeup(): never
+    public function __wakeup(): never
     {
         throw new \Exception('Cannot unserialize a multiton.');
     }

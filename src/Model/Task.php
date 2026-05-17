@@ -1,7 +1,8 @@
 <?php
-namespace G4\Api\Model;
 
-use G4\Api\Model\TaskStatus;
+declare(strict_types=1);
+
+namespace G4\Api\Model;
 
 /**
  * Entité tâche. Le statut est géré via l'enum TaskStatus.

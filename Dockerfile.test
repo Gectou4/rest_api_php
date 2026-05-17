@@ -1,0 +1,11 @@
+FROM php:8.4-cli
+
+WORKDIR /var/www/html
+
+COPY . .
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+RUN composer install
+
+CMD ["./vendor/bin/phpunit"]

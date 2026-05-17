@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\Controller;
 
 /** Contrôleur des opérations de lecture sur les utilisateurs et leurs tâches. */

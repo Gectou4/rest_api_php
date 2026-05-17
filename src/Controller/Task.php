@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\Controller;
 
 use G4\Api\Model\TaskStatus;
@@ -26,16 +29,20 @@ class Task extends ControllerAbstract
      */
     public function putAddTaskAction(): mixed
     {
-        if (empty($this->getParam('title'))) {
+        $title = $this->getParam('title');
+        if ($title === '' || $title === null) {
             $this->setCode(400);
             throw new \Exception('Title is required');
         }
 
-        $task   = new \G4\Api\Model\Task();
+        $description = $this->getParam('description');
+        $status = $this->getParam('status');
+
+        $task = new \G4\Api\Model\Task();
         $result = $task
-            ->setTitle($this->getParam('title'))
-            ->setDescription($this->getParam('description', ''))
-            ->setStatus((int) $this->getParam('status', TaskStatus::Backlog->value))
+            ->setTitle((string) $title)
+            ->setDescription(\is_string($description) ? $description : '')
+            ->setStatus(\is_int($status) ? $status : TaskStatus::Backlog->value)
             ->save();
 
         if ($result) {
@@ -61,20 +68,23 @@ class Task extends ControllerAbstract
     {
         $this->setCode(500);
 
-        $user = new \G4\Api\Model\User((int) $this->getParam('userId'));
+        $userId = (int) $this->getParam('userId');
+        $taskId = (int) $this->getParam('taskId');
+
+        $user = new \G4\Api\Model\User($userId);
         if (!$user->isLoaded()) {
             $this->setCode(400);
-            return 'User [' . $this->getParam('userId') . '] not exists';
+            return 'User [' . $userId . '] not exists';
         }
 
-        $task = new \G4\Api\Model\Task((int) $this->getParam('taskId'));
+        $task = new \G4\Api\Model\Task($taskId);
         if (!$task->isLoaded()) {
             $this->setCode(400);
-            return 'Task [' . $this->getParam('taskId') . '] not exists';
+            return 'Task [' . $taskId . '] not exists';
         }
 
-        $userTask = new \G4\Api\Model\UserTask((int) $this->getParam('userId'));
-        if ($userTask->addTaskId((int) $this->getParam('taskId'))->save()) {
+        $userTask = new \G4\Api\Model\UserTask($userId);
+        if ($userTask->addTaskId($taskId)->save()) {
             return 1;
         }
 
@@ -89,10 +99,12 @@ class Task extends ControllerAbstract
     {
         $this->setCode(500);
 
-        $task = new \G4\Api\Model\Task((int) $this->getParam('id'));
+        $id = (int) $this->getParam('id');
+
+        $task = new \G4\Api\Model\Task($id);
         if (!$task->isLoaded()) {
             $this->setCode(400);
-            return 'Task [' . $this->getParam('id') . '] not exists';
+            return 'Task [' . $id . '] not exists';
         }
 
         if ($task->delete()) {
@@ -110,16 +122,19 @@ class Task extends ControllerAbstract
     {
         $this->setCode(500);
 
-        $user = new \G4\Api\Model\User((int) $this->getParam('userId'));
+        $userId = (int) $this->getParam('userId');
+        $taskId = (int) $this->getParam('taskId');
+
+        $user = new \G4\Api\Model\User($userId);
         if (!$user->isLoaded()) {
             $this->setCode(400);
-            return 'User [' . $this->getParam('userId') . '] not exists';
+            return 'User [' . $userId . '] not exists';
         }
 
-        $userTask = new \G4\Api\Model\UserTask((int) $this->getParam('userId'));
+        $userTask = new \G4\Api\Model\UserTask($userId);
 
-        if ($userTask->hasTask((int) $this->getParam('taskId'))) {
-            if ($userTask->removeTaskId((int) $this->getParam('taskId'))->save()) {
+        if ($userTask->hasTask($taskId)) {
+            if ($userTask->removeTaskId($taskId)->save()) {
                 return 1;
             }
             return 'Unable to delete Task of user';
@@ -140,21 +155,26 @@ class Task extends ControllerAbstract
      */
     public function putEditTaskAction(): mixed
     {
-        if (empty($this->getParam('id'))) {
+        $id = $this->getParam('id');
+        if ($id === '' || $id === null) {
             $this->setCode(400);
             throw new \Exception('Id of task to edit is required');
         }
 
-        $task = new \G4\Api\Model\Task((int) $this->getParam('id'));
+        $task = new \G4\Api\Model\Task((int) $id);
         if (!$task->isLoaded()) {
             $this->setCode(400);
             throw new \Exception('Task not found');
         }
 
+        $title = $this->getParam('title');
+        $description = $this->getParam('description');
+        $status = $this->getParam('status');
+
         $saved = $task
-            ->setTitle($this->getParam('title', $task->getTitle()))
-            ->setDescription($this->getParam('description', $task->getDescription()))
-            ->setStatus($this->getParam('status', $task->getStatus()))
+            ->setTitle(\is_string($title) ? $title : $task->getTitle())
+            ->setDescription(\is_string($description) ? $description : $task->getDescription())
+            ->setStatus(\is_int($status) ? $status : $task->getStatus())
             ->save();
 
         if ($saved) {

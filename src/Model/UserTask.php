@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace G4\Api\Model;
 
 /**
@@ -89,7 +92,7 @@ class UserTask extends ModelAbstract
     /** Indique si la tâche donnée est présente dans la liste en mémoire. */
     public function hasTask(int $taskId): bool
     {
-        return isset($this->taskList[$taskId]);
+        return array_key_exists($taskId, $this->taskList);
     }
 
     /**
@@ -100,6 +103,7 @@ class UserTask extends ModelAbstract
     #[\Override]
     public function save(): bool
     {
+        \assert($this->db !== null);
         try {
             $this->db->beginTransaction();
 
@@ -123,6 +127,7 @@ class UserTask extends ModelAbstract
     /** Supprime une seule association user-task dans une transaction atomique. */
     public function deleteUserTask(int $taskId): bool
     {
+        \assert($this->db !== null);
         try {
             $this->db->beginTransaction();
 
