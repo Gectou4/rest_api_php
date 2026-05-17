@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  MAGO_VERSION: '1.27.0'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: "Lint (Mago)"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Mago
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://carthage.software/mago.sh | bash -s -- --version=${{ env.MAGO_VERSION }}
+          echo "$HOME/.mago/bin" >> $GITHUB_PATH
+
+      - name: Initialize Mago config
+        run: mago init
+
+      - name: Run linter
+        run: mago lint
+
+      - name: Check formatting
+        run: mago fmt --check
+
+  analyze:
+    runs-on: ubuntu-latest
+    name: "Static Analysis (Mago)"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Mago
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://carthage.software/mago.sh | bash -s -- --version=${{ env.MAGO_VERSION }}
+          echo "$HOME/.mago/bin" >> $GITHUB_PATH
+
+      - name: Initialize Mago config
+        run: mago init
+
+      - name: Run static analysis
+        run: mago analyze
+
+  test:
+    needs: [lint, analyze]
+    runs-on: ubuntu-latest
+    name: "Tests (PHP ${{ matrix.php-version }})"
+    strategy:
+      matrix:
+        php-version: ['8.3', '8.4']
+      fail-fast: false
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: rest_api
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root --password=root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          coverage: none
+          tools: composer
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ runner.os }}-php${{ matrix.php-version }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h127.0.0.1 -uroot -proot --silent; do
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+
+      - name: Initialize database
+        run: |
+          mysql -h127.0.0.1 -uroot -proot rest_api < share/sql/rest_api.sql
+
+      - name: Run tests
+        env:
+          DB_USER: root
+          DB_PWD: root
+          DB_DSN: mysql:host=127.0.0.1;dbname=rest_api;charset=utf8
+        run: composer exec phpunit
+
+  quality-gate:
+    needs: [lint, analyze, test]
+    runs-on: ubuntu-latest
+    name: "Quality Gate"
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Analyze: ${{ needs.analyze.result }}"
+          echo "Test: ${{ needs.test.result }}"
+
+          if [[ "${{ needs.lint.result }}" == "failure" || "${{ needs.analyze.result }}" == "failure" || "${{ needs.test.result }}" == "failure" ]]; then
+            echo "Quality gate FAILED"
+            exit 1
+          fi
+
+          echo "Quality gate PASSED"
+
+  auto-fix:
+    needs: [lint]
+    if: failure() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    name: "Auto-fix formatting"
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Mago
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://carthage.software/mago.sh | bash -s -- --version=${{ env.MAGO_VERSION }}
+          echo "$HOME/.mago/bin" >> $GITHUB_PATH
+
+      - name: Initialize Mago config
+        run: mago init
+
+      - name: Apply formatting fixes
+        run: mago fmt
+
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No formatting changes to commit"
+          else
+            git commit -m "style: auto-fix formatting with Mago"
+            git push
+          fi

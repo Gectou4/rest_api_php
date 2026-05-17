@@ -1,0 +1,356 @@
+openapi: 3.0.3
+
+info:
+  title: G4 API
+  description: |
+    API REST légère de gestion d'utilisateurs et de tâches.
+
+    **Authentification** : aucune (à implémenter).
+
+    **Format** : toutes les réponses sont en `application/json`.
+
+    **Codes de succès** :
+    - Création de tâche → `201 Created` avec la ressource complète.
+    - Autres opérations réussies → `200 OK` avec `1`.
+  version: 0.1.0
+  contact:
+    email: lsemat@manager.one
+
+servers:
+  - url: http://localhost/public
+    description: Serveur de développement local
+
+tags:
+  - name: Utilisateurs
+    description: Opérations sur les utilisateurs
+  - name: Tâches
+    description: Opérations sur les tâches
+  - name: Tâches utilisateur
+    description: Association tâches ↔ utilisateurs
+
+paths:
+
+  # ─────────────────────────────────────────
+  # UTILISATEURS
+  # ─────────────────────────────────────────
+
+  /user/{id}:
+    get:
+      tags: [Utilisateurs]
+      summary: Récupérer un utilisateur
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Utilisateur trouvé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              example:
+                user_id: 1
+                name: G4
+                email: gectou4@gmail.com
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /user/{id}/task:
+    get:
+      tags: [Tâches utilisateur]
+      summary: Récupérer la liste des tâches d'un utilisateur
+      operationId: getUserTasks
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Liste des tâches de l'utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTask'
+              example:
+                user_id: 1
+                tasks:
+                  1:
+                    task_id: 1
+                    status: 2
+                    title: Faire le café
+                    description: Aller à la cafetière…
+                    creation_date: '2015-11-04 03:01:08'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /user/{id}/task/{taskId}:
+    post:
+      tags: [Tâches utilisateur]
+      summary: Associer une tâche à un utilisateur
+      operationId: addTaskToUser
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/taskId'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessInt'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [Tâches utilisateur]
+      summary: Retirer une tâche d'un utilisateur
+      operationId: removeTaskFromUser
+      parameters:
+        - $ref: '#/components/parameters/userId'
+        - $ref: '#/components/parameters/taskId'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessInt'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ─────────────────────────────────────────
+  # TÂCHES
+  # ─────────────────────────────────────────
+
+  /task:
+    post:
+      tags: [Tâches]
+      summary: Créer une nouvelle tâche
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '201':
+          description: Tâche créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                task_id: 3
+                status: 1
+                title: Nouvelle tâche
+                description: Description de la tâche
+                creation_date: '2026-05-12 10:00:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /task/{id}:
+    post:
+      tags: [Tâches]
+      summary: Mettre à jour une tâche
+      operationId: updateTask
+      parameters:
+        - $ref: '#/components/parameters/taskIdPath'
+      requestBody:
+        required: false
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TaskInput'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessInt'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      tags: [Tâches]
+      summary: Supprimer une tâche
+      operationId: deleteTask
+      parameters:
+        - $ref: '#/components/parameters/taskIdPath'
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessInt'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+# ─────────────────────────────────────────
+# COMPOSANTS RÉUTILISABLES
+# ─────────────────────────────────────────
+
+components:
+
+  parameters:
+
+    userId:
+      name: id
+      in: path
+      required: true
+      description: Identifiant de l'utilisateur
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+    taskId:
+      name: taskId
+      in: path
+      required: true
+      description: Identifiant de la tâche
+      schema:
+        type: integer
+        minimum: 1
+      example: 2
+
+    taskIdPath:
+      name: id
+      in: path
+      required: true
+      description: Identifiant de la tâche
+      schema:
+        type: integer
+        minimum: 1
+      example: 2
+
+  schemas:
+
+    User:
+      type: object
+      required: [user_id, name, email]
+      properties:
+        user_id:
+          type: integer
+          description: Identifiant unique de l'utilisateur
+          example: 1
+        name:
+          type: string
+          maxLength: 32
+          description: Nom de l'utilisateur
+          example: G4
+        email:
+          type: string
+          format: email
+          maxLength: 320
+          description: Adresse e-mail (RFC 2821)
+          example: gectou4@gmail.com
+
+    Task:
+      type: object
+      required: [task_id, status, title, description, creation_date]
+      properties:
+        task_id:
+          type: integer
+          description: Identifiant unique de la tâche
+          example: 1
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        title:
+          type: string
+          maxLength: 128
+          description: Titre de la tâche
+          example: Faire le café
+        description:
+          type: string
+          description: Description détaillée de la tâche
+          example: Aller à la cafetière, mettre la tasse…
+        creation_date:
+          type: string
+          format: date-time
+          description: Date de création (format Y-m-d H:i:s)
+          example: '2015-11-04 03:01:08'
+
+    TaskInput:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 128
+          description: Titre de la tâche (obligatoire pour la création)
+          example: Nouvelle tâche
+        description:
+          type: string
+          description: Description de la tâche
+          example: Description détaillée
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+
+    TaskStatus:
+      type: integer
+      description: |
+        Statut de la tâche :
+        - `1` — Backlog
+        - `2` — À faire (Todo)
+        - `3` — En cours (InProgress)
+        - `4` — Terminé (Done)
+        - `5` — Fermé (Closed)
+      enum: [1, 2, 3, 4, 5]
+      example: 1
+
+    UserTask:
+      type: object
+      required: [user_id, tasks]
+      properties:
+        user_id:
+          type: integer
+          description: Identifiant de l'utilisateur
+          example: 1
+        tasks:
+          type: object
+          description: Dictionnaire de tâches indexé par task_id
+          additionalProperties:
+            $ref: '#/components/schemas/Task'
+
+    Error:
+      type: string
+      description: Message d'erreur lisible
+      example: Task [42] not exists
+
+  responses:
+
+    SuccessInt:
+      description: Opération réussie
+      content:
+        application/json:
+          schema:
+            type: integer
+            enum: [1]
+          example: 1
+
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: No user found
+
+    BadRequest:
+      description: Paramètres invalides ou ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            userNotFound:
+              summary: Utilisateur inexistant
+              value: User [99] not exists
+            taskNotFound:
+              summary: Tâche inexistante
+              value: Task [99] not exists
+            titleRequired:
+              summary: Titre manquant
+              value: Title is required
+
+    InternalError:
+      description: Erreur interne du serveur
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example: Unable to create new Task

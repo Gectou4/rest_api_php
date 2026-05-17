@@ -1,0 +1,17 @@
+# Mago configuration file
+# Generated for G4Api project
+
+[source]
+paths = ["src", "tests", "public"]
+
+[format]
+indent_style = "space"
+indent_width = 4
+line_length = 120
+line_ending = "lf"
+
+[linter]
+level = "recommended"
+
+[analyzer]
+strictness = "recommended"

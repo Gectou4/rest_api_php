@@ -1,0 +1,21 @@
+{
+    "name": "G4/Api",
+    "description": "G4 api is a simple api for rest purpose",
+    "license": "MIT",
+    "keywords": ["G4", "Api"],
+    "authors": [
+        {
+            "name": "Laurent Sémat",
+            "email": "gectou4@gmail.com"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^11"
+    },
+    "autoload": {
+        "psr-4": {
+            "G4\\Api\\": "src"
+        }
+    }
+}
