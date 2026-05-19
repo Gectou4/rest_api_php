@@ -2,4 +2,3 @@ vendor/
 phpunit.phar
 .env
 *.log
-.docker/

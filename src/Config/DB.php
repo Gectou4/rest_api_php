@@ -30,15 +30,15 @@ class DB
 
         $default = [
             'user' => \is_string($envUser) ? $envUser : 'root',
-            'pwd'  => \is_string($envPwd) ? $envPwd : '',
-            'dsn'  => \is_string($envDsn) ? $envDsn : 'mysql:host=localhost;dbname=rest_api;charset=utf8',
+            'pwd' => \is_string($envPwd) ? $envPwd : '',
+            'dsn' => \is_string($envDsn) ? $envDsn : 'mysql:host=localhost;dbname=rest_api;charset=utf8mb4',
         ];
 
         $master = $default;
 
         return match ($key) {
             'master' => $master,
-            default  => $default,
+            default => $default,
         };
     }
 }

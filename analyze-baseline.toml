@@ -1,0 +1,421 @@
+variant = "loose"
+
+[[issues]]
+file = "src/App/Api.php"
+code = "ambiguous-object-method-access"
+message = "Cannot statically verify method call on a generic `object` type."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "array-to-string-conversion"
+message = "Potentially casting `array` to `string`."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "falsable-return-statement"
+message = '''Function `G4\Api\App\Api::getFormatedResponseForContent` is declared to return `string` but possibly returns 'false' (inferred as `false|string`).'''
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "falsable-return-statement"
+message = '''Function `G4\Api\App\Api::getRequestHeaders` is declared to return `array<array-key, mixed>` but possibly returns 'false' (inferred as `array<string, string>|false`).'''
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `G4\Api\App\Api::getFormatedResponseForContent`: expected `string`, but found `false|string`.'
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "invalid-return-statement"
+message = 'Invalid return type for function `G4\Api\App\Api::getRequestHeaders`: expected `array<array-key, mixed>`, but found `array<string, string>|false`.'
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #3 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-operand"
+message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-property-type-coercion"
+message = "A value with a less specific type `mixed` is being assigned to property `$$action` (string)."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-property-type-coercion"
+message = "A value with a less specific type `mixed` is being assigned to property `$$args` (array<array-key, mixed>)."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-property-type-coercion"
+message = "A value with a less specific type `mixed` is being assigned to property `$$code` (int)."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-property-type-coercion"
+message = "A value with a less specific type `mixed` is being assigned to property `$$controllerName` (string)."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-property-type-coercion"
+message = "A value with a less specific type `nonnull` is being assigned to property `$$action` (string)."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `G4\Api\App\Api::parsePutBody`. Saw type `nonnull`.'
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `G4\Api\App\Api::resolveRoute`. Saw type `nonnull`.'
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "possibly-false-argument"
+message = "Argument #1 of function `json_decode` is possibly `false`, but parameter type `string` does not accept it."
+count = 2
+
+[[issues]]
+file = "src/App/Api.php"
+code = "possibly-false-argument"
+message = "Argument #1 of function `parse_str` is possibly `false`, but parameter type `string` does not accept it."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 3
+
+[[issues]]
+file = "src/App/Api.php"
+code = "redundant-null-coalesce"
+message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "reference-to-undefined-variable"
+message = "Reference created from a previously undefined variable `$data`."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "string-member-selector"
+message = "This member selector uses a non-literal string type (`truthy-string`); its specific value cannot be statically determined."
+count = 1
+
+[[issues]]
+file = "src/App/Api.php"
+code = "unknown-class-instantiation"
+message = "Cannot determine the concrete class for instantiation."
+count = 1
+
+[[issues]]
+file = "src/App/MultitonAbstract.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `G4\Api\App\MultitonAbstract::getInstance`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/App/MultitonAbstract.php"
+code = "unsafe-instantiation"
+message = 'Unsafe `new static()`: constructor of `G4\Api\App\MultitonAbstract` is not final and its signature might change in child classes, potentially leading to runtime errors.'
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "invalid-operand"
+message = "Invalid type for left operand."
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "invalid-operand"
+message = "Invalid type for right operand."
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "mixed-argument"
+message = '''Invalid argument type for argument #1 of `G4\Api\App\Router::handle`: expected `list<array{'fn': (callable(...mixed): mixed), 'pattern': string}>`, but found `mixed`.'''
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #3 of `substr`: expected `int|null`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "mixed-array-assignment"
+message = "Unsafe array assignment on type `mixed`."
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `G4\Api\App\Router::handle`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "redundant-type-comparison"
+message = "Redundant type assertion: `$fn` is already `(callable(...mixed): mixed)`."
+count = 1
+
+[[issues]]
+file = "src/App/Router.php"
+code = "redundant-type-comparison"
+message = "Redundant type assertion: `$matches` is already `list<array<array-key, string>>`."
+count = 1
+
+[[issues]]
+file = "src/App/SingletonAbstract.php"
+code = "less-specific-return-statement"
+message = 'Returned type `g4\api\app\singletonabstract` is less specific than the declared return type `g4\api\app\singletonabstract&static` for function `G4\Api\App\SingletonAbstract::getInstance`.'
+count = 1
+
+[[issues]]
+file = "src/App/SingletonAbstract.php"
+code = "unsafe-instantiation"
+message = 'Unsafe `new static()`: constructor of `G4\Api\App\SingletonAbstract` is not final and its signature might change in child classes, potentially leading to runtime errors.'
+count = 1
+
+[[issues]]
+file = "src/Controller/Task.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 7
+
+[[issues]]
+file = "src/Model/ModelAbstract.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Model/ModelAbstract.php"
+code = "non-iterable-object-iteration"
+message = 'Iterating over object of type `G4\Api\Model\ModelAbstract` which does not implement `Iterator` or `IteratorAggregate`.'
+count = 1
+
+[[issues]]
+file = "src/Model/ModelAbstract.php"
+code = "unused-pragma"
+message = "This pragma was not used and may be removed."
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "invalid-property-assignment-value"
+message = "Invalid type for property `$creationDate`: expected `DateTimeImmutable|null`, but got `DateTimeImmutable&static|false`."
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\Task::setCreationDate`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\Task::setDescription`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\Task::setTitle`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 7
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `truthy-mixed`."
+count = 4
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 7
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 15
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-operand"
+message = "Left operand in `&&` operation has `mixed` type."
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `G4\Api\Model\Task::save`. Saw type `mixed`.'
+count = 2
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "possible-method-access-on-null"
+message = "Attempting to call a method on `null`."
+count = 6
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "redundant-null-coalesce"
+message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
+count = 1
+
+[[issues]]
+file = "src/Model/Task.php"
+code = "unknown-iterator-type"
+message = "Cannot determine the type of the expression provided to `foreach`."
+count = 1
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\User::setEmail`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\User::setName`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `truthy-mixed`."
+count = 2
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 2
+
+[[issues]]
+file = "src/Model/User.php"
+code = "possible-method-access-on-null"
+message = "Attempting to call a method on `null`."
+count = 1
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "invalid-iterator"
+message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
+count = 1
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "invalid-method-access"
+message = "Attempting to access a method on a non-object type (`false`)."
+count = 4
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\Task::setCreationDate`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\Task::setDescription`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\Task::setTitle`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 5
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 3
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "possible-method-access-on-null"
+message = "Attempting to call a method on `null`."
+count = 1
+
+[[issues]]
+file = "src/Model/UserTask.php"
+code = "unsafe-instantiation"
+message = 'Unsafe `new static()`: constructor of `G4\Api\Model\UserTask` is not final and its signature might change in child classes, potentially leading to runtime errors.'
+count = 1

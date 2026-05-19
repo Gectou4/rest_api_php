@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 env:
-  MAGO_VERSION: '1.27.0'
+  MAGO_VERSION: '1.28.0'
 
 jobs:
   analyze:
@@ -16,6 +16,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+
+      - name: Clear composer cache
+        run: composer clear-cache
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress && composer dump-autoload
 
       - name: Install Mago
         env:
@@ -61,15 +73,8 @@ jobs:
           coverage: none
           tools: composer
 
-      - name: Cache Composer dependencies
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php${{ matrix.php-version }}-composer-${{ hashFiles('**/composer.json') }}
-          restore-keys: ${{ runner.os }}-php${{ matrix.php-version }}-composer-
-
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress && composer dump-autoload
 
       - name: Wait for MySQL
         run: |
@@ -88,6 +93,18 @@ jobs:
           DB_PWD: root
           DB_DSN: mysql:host=127.0.0.1;dbname=rest_api;charset=utf8
         run: composer exec phpunit
+
+      - name: Debug autoloader
+        if: failure()
+        run: |
+          echo "=== Files in src/Controller/ ==="
+          ls -la src/Controller/
+          echo "=== Composer classmap for UserTask ==="
+          grep -i "usertask" vendor/composer/autoload_classmap.php || echo "NOT IN CLASSMAP"
+          echo "=== PHP class existence check ==="
+          php -r "require 'vendor/autoload.php'; var_dump(class_exists('G4\Api\Controller\UserTask'));"
+          echo "=== File content check ==="
+          head -5 src/Controller/UserTask.php
 
   quality-gate:
     needs: [analyze, test]

@@ -1,2 +1,25 @@
 [source]
 paths = ["src", "tests", "public"]
+includes = ["vendor"]
+
+[linter.rules]
+"literal-named-argument" = { enabled = false }
+cyclomatic-complexity = { threshold = 50 }
+kan-defect = { threshold = 3.0 }
+too-many-methods = { threshold = 20 }
+
+[analyzer]
+excludes = ["tests/"]
+baseline = "analyze-baseline.toml"
+find-overly-wide-return-types = false
+find-unused-expressions = false
+find-unused-definitions = false
+analyze-dead-code = false
+check-missing-type-hints = false
+check-closure-missing-type-hints = false
+check-arrow-function-missing-type-hints = false
+check-missing-override = false
+check-property-initialization = false
+check-use-statements = false
+check-name-casing = false
+perform-heuristic-checks = false

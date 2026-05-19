@@ -12,9 +12,11 @@ use G4\Api\Config\Route as Config;
  */
 class Router extends SingletonAbstract
 {
-    private array  $routes    = [];
+    private array $routes = [];
+
     private string $baseroute = '';
-    private string $method    = '';
+
+    private string $method = '';
 
     /** Retourne l'instance unique et charge les routes si elles ne l'ont pas encore été. */
     public static function getInstance(): static
@@ -23,6 +25,7 @@ class Router extends SingletonAbstract
         if ($instance->routes === []) {
             Config::load($instance);
         }
+
         return $instance;
     }
 
@@ -33,15 +36,16 @@ class Router extends SingletonAbstract
     public function setMethod(string $method): void
     {
         $allowed = ['GET' => true, 'POST' => true, 'DELETE' => true, 'PUT' => true, 'HEAD' => true];
-        $method  = strtoupper(trim($method));
+        $method = strtoupper(trim($method));
 
-        if (!isset($allowed[$method])) {
+        if (!array_key_exists($method, $allowed)) {
             throw new \InvalidArgumentException(sprintf(
                 'Router: method [%s] is not allowed. Expected: %s',
                 $method,
-                implode(', ', array_keys($allowed))
+                implode(', ', array_keys($allowed)),
             ));
         }
+
         $this->method = $method;
     }
 
@@ -52,20 +56,22 @@ class Router extends SingletonAbstract
     public function match(string $methods, string $pattern, callable $fn): static
     {
         $pattern = $this->baseroute . '/' . trim($pattern, '/');
-        $pattern = $this->baseroute ? rtrim($pattern, '/') : $pattern;
+        $pattern = $this->baseroute !== '' && $this->baseroute !== '0' ? rtrim($pattern, '/') : $pattern;
 
         foreach (explode('|', $methods) as $method) {
             $this->routes[$method][] = ['pattern' => $pattern, 'fn' => $fn];
         }
+
         return $this;
     }
 
     /** Parcourt les routes enregistrées pour la méthode courante et retourne le résultat du premier match. */
     public function run(string $uri): ?array
     {
-        if (isset($this->routes[$this->method])) {
+        if (array_key_exists($this->method, $this->routes)) {
             return $this->handle($this->routes[$this->method], $uri);
         }
+
         return null;
     }
 
@@ -73,26 +79,40 @@ class Router extends SingletonAbstract
      * Tente de faire correspondre l'URI à chaque route.
      * Utilise PREG_OFFSET_CAPTURE pour extraire précisément les groupes capturants
      * même lorsqu'ils sont adjacents dans l'URI.
+     *
+     * @param list<array{pattern: string, fn: callable}> $routes
+     * @return array<string, string>|null
      */
     private function handle(array $routes, string $uri): ?array
     {
         foreach ($routes as $route) {
+            $matches = [];
             if (!preg_match_all('#^' . $route['pattern'] . '$#', $uri, $matches, PREG_OFFSET_CAPTURE)) {
                 continue;
             }
 
             $matches = array_slice($matches, 1);
-            $params  = array_filter(array_map(function (array $match, int $index) use ($matches): string {
-                if (array_key_exists($index + 1, $matches) && is_array($matches[$index + 1][0])) {
-                    return trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
-                }
-                return array_key_exists(0, $match) ? trim($match[0][0], '/') : '';
-            }, $matches, array_keys($matches)), fn(string $v): bool => $v !== '');
+            \assert(is_array($matches), 'preg_match_all must populate $matches on success');
+            $params = array_filter(
+                array_map(
+                    static function (array $match, int $index) use ($matches): string {
+                        if (array_key_exists($index + 1, $matches)) {
+                            return trim(substr($match[0][0], 0, $matches[$index + 1][0][1] - $match[0][1]), '/');
+                        }
+
+                        return array_key_exists(0, $match) ? trim($match[0][0], '/') : '';
+                    },
+                    $matches,
+                    array_keys($matches),
+                ),
+                static fn(string $v): bool => $v !== '',
+            );
 
             $fn = $route['fn'];
-            \assert(\is_callable($fn));
+            \assert(\is_callable($fn), 'Route handler must be callable');
             return $fn(...$params);
         }
+
         return null;
     }
 }

@@ -19,7 +19,7 @@ services:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: rest_api
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./share/sql/rest_api.sql:/docker-entrypoint-initdb.d/init.sql:ro

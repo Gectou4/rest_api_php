@@ -19,7 +19,7 @@ class ApiTest extends TestCase
         $_GET['request'] = '/user/1';
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);
@@ -34,7 +34,7 @@ class ApiTest extends TestCase
         $_GET['request'] = '/user/1/task';
         $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);
@@ -49,11 +49,11 @@ class ApiTest extends TestCase
     {
         $_GET['request'] = '/task/';
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST['status']      = TaskStatus::Backlog->value;
-        $_POST['title']       = 'Faire le thè';
+        $_POST['status'] = TaskStatus::Backlog->value;
+        $_POST['title'] = 'Faire le thè';
         $_POST['description'] = 'Comme pour le café, mais avec du thé';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);
@@ -66,17 +66,17 @@ class ApiTest extends TestCase
 
     public function testEditTask(): void
     {
-        $task     = new Task();
+        $task = new Task();
         $taskList = $task->getAll();
-        $last     = array_pop($taskList);
+        $last = array_pop($taskList);
 
         $_GET['request'] = '/task/' . $last['task_id'];
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST['status']      = TaskStatus::Backlog->value;
-        $_POST['title']       = 'Faire le thè';
+        $_POST['status'] = TaskStatus::Backlog->value;
+        $_POST['title'] = 'Faire le thè';
         $_POST['description'] = 'Comme pour le café, mais avec du thé et en mieux';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);
@@ -86,14 +86,14 @@ class ApiTest extends TestCase
 
     public function testAddTaskToUser(): void
     {
-        $task     = new Task();
+        $task = new Task();
         $taskList = $task->getAll();
-        $last     = array_pop($taskList);
+        $last = array_pop($taskList);
 
         $_GET['request'] = '/user/1/task/' . $last['task_id'];
         $_SERVER['REQUEST_METHOD'] = 'POST';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);
@@ -103,14 +103,14 @@ class ApiTest extends TestCase
 
     public function testDelTaskToUser(): void
     {
-        $task     = new Task();
+        $task = new Task();
         $taskList = $task->getAll();
-        $last     = array_pop($taskList);
+        $last = array_pop($taskList);
 
         $_GET['request'] = '/user/1/task/' . $last['task_id'];
         $_SERVER['REQUEST_METHOD'] = 'DELETE';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);
@@ -120,14 +120,14 @@ class ApiTest extends TestCase
 
     public function testDelTask(): void
     {
-        $task     = new Task();
+        $task = new Task();
         $taskList = $task->getAll();
-        $last     = array_pop($taskList);
+        $last = array_pop($taskList);
 
         $_GET['request'] = '/task/' . $last['task_id'];
         $_SERVER['REQUEST_METHOD'] = 'DELETE';
 
-        $api      = new Api();
+        $api = new Api();
         $response = $api->processRequest()->getFormatedResponseForContent();
 
         $this->assertIsString($response);

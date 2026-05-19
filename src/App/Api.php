@@ -54,7 +54,7 @@ class Api
         505 => 'HTTP Version Not Supported',
     ];
 
-    protected string $contentType    = 'application/json';
+    protected string $contentType    = 'application/json; charset=utf-8';
     protected string $method         = '';
     protected array  $args           = [];
     protected mixed  $controller     = null;
@@ -83,108 +83,6 @@ class Api
         return $this->action;
     }
 
-    /**
-     * Pipeline principal de traitement d'une requête entrante :
-     * 1. Détecte et normalise la méthode HTTP (gère X-HTTP-Method-Override et HEAD).
-     * 2. Nettoie les inputs.
-     * 3. Résout la route via le Router (sinon tente une convention Controller/Action).
-     * 4. Instancie le contrôleur et appelle l'action correspondante.
-     */
-    public function processRequest(): static
-    {
-        if ($_SERVER['REQUEST_METHOD'] === null) {
-            $this->code     = 406;
-            $this->response = $this->getHttpCodeMessage(406);
-            return $this;
-        }
-
-        $this->method = strtoupper($_SERVER['REQUEST_METHOD']);
-        $request      = rtrim($_GET['request'] ?? $_POST['request'] ?? '', '/');
-
-        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-        if (str_contains($accept, 'text/markdown')) {
-            $this->contentType = 'text/markdown; charset=utf-8';
-        }
-
-        if ($this->method === 'POST' && isset($_SERVER['HTTP_X_HTTP_METHOD'])) {
-            $override = $_SERVER['HTTP_X_HTTP_METHOD'];
-            if (in_array($override, ['DELETE', 'PUT'], true)) {
-                $this->method = $override;
-            } else {
-                $headers = $this->getRequestHeaders();
-                if (isset($headers['X-HTTP-Method-Override'])
-                    && in_array($headers['X-HTTP-Method-Override'], ['PUT', 'DELETE', 'PATCH'], true)
-                ) {
-                    $this->method = $headers['X-HTTP-Method-Override'];
-                } else {
-                    $this->code     = 405;
-                    $this->response = $this->getHttpCodeMessage(405);
-                    return $this;
-                }
-            }
-        } elseif ($this->method === 'HEAD') {
-            // HEAD = GET sans corps de réponse (RFC 7231 §4.3.2)
-            ob_start();
-            $this->method = 'GET';
-        }
-
-        $this->cleanRequest($this->method);
-
-        $route  = Router::getInstance();
-        $route->setMethod($this->method);
-        $result = $route->run($request);
-
-        if (isset($result['controller'])) {
-            $this->controllerName = $result['controller'];
-            $this->action         = $result['action'] ?? 'index';
-            $params               = $result['params'] ?? [];
-        } else {
-            // Fallback : convention Controller/Action extraite de l'URI
-            $params               = explode('/', $request);
-            $this->controllerName = array_shift($params);
-            if (isset($this->args[0]) && !is_numeric($params[0] ?? '')) {
-                $this->action = array_shift($this->args);
-            }
-        }
-
-        $className = '\G4\Api\Controller\\' . ucfirst(strtolower($this->controllerName));
-        $method    = strtolower($this->method) . ucfirst(strtolower($this->action)) . 'Action';
-
-        if (!class_exists($className)) {
-            $this->code     = 404;
-            $this->response = $this->getHttpCodeMessage(404);
-            return $this;
-        }
-
-        if (!is_callable([$className, $method])) {
-            $this->code     = 404;
-            $this->response = $this->getHttpCodeMessage(404);
-            return $this;
-        }
-
-        if ($this->args !== []) {
-            foreach ($this->args as $key => $value) {
-                $params[$key] = $value;
-            }
-        }
-
-        $this->controller = new $className;
-
-        if ($params !== []) {
-            $this->controller->setParams($params);
-        }
-
-        try {
-            $this->response = $this->controller->$method();
-        } catch (\Exception $e) {
-            $this->response = $e->getMessage();
-        }
-
-        $this->code = $this->controller->getCode();
-
-        return $this;
-    }
-
     public function getCode(): int
     {
         return $this->code;
@@ -195,12 +93,151 @@ class Api
         $this->code = $code;
     }
 
+    /**
+     * Pipeline principal de traitement d'une requête entrante.
+     */
+    public function processRequest(): static
+    {
+        $requestMethod = $_SERVER['REQUEST_METHOD'] ?? '';
+        if ($requestMethod === '') {
+            $this->code     = 406;
+            $this->response = $this->getHttpCodeMessage(406);
+            return $this;
+        }
+
+        $this->method = strtoupper($requestMethod);
+        $this->detectContentType();
+        $this->normalizeHttpMethod();
+        $this->cleanRequest($this->method);
+
+        $params = $this->resolveRoute();
+
+        if (!$this->dispatchController($params)) {
+            return $this;
+        }
+
+        $this->code = $this->controller->getCode();
+        return $this;
+    }
+
+    /** Détecte si le client accepte le Markdown. */
+    protected function detectContentType(): void
+    {
+        $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+        if (str_contains((string) $accept, 'text/markdown')) {
+            $this->contentType = 'text/markdown; charset=utf-8';
+        }
+    }
+
+    /**
+     * Normalise la méthode HTTP : gère X-HTTP-Method-Override et HEAD.
+     * Retourne false si la méthode n'est pas autorisée (405).
+     */
+    protected function normalizeHttpMethod(): bool
+    {
+        if ($this->method === 'HEAD') {
+            ob_start();
+            $this->method = 'GET';
+            return true;
+        }
+
+        if ($this->method !== 'POST') {
+            return true;
+        }
+
+        if (array_key_exists('HTTP_X_HTTP_METHOD', $_SERVER)) {
+            $override = $_SERVER['HTTP_X_HTTP_METHOD'];
+            if (in_array($override, ['DELETE', 'PUT'], strict: true)) {
+                $this->method = $override;
+                return true;
+            }
+        }
+
+        $headers = $this->getRequestHeaders();
+        if (array_key_exists('X-HTTP-Method-Override', $headers)
+            && in_array($headers['X-HTTP-Method-Override'], ['PUT', 'DELETE', 'PATCH'], strict: true)
+        ) {
+            $this->method = $headers['X-HTTP-Method-Override'];
+            return true;
+        }
+
+        $this->code     = 405;
+        $this->response = $this->getHttpCodeMessage(405);
+        return false;
+    }
+
+    /** Résout la route et retourne les paramètres extraits. */
+    protected function resolveRoute(): array
+    {
+        $request = rtrim((string) ($_GET['request'] ?? $_POST['request'] ?? ''), '/');
+
+        $route = Router::getInstance();
+        $route->setMethod($this->method);
+        $result = $route->run($request);
+
+        if (is_array($result) && array_key_exists('controller', $result)) {
+            $this->controllerName = $result['controller'];
+            $this->action         = $result['action'] ?? 'index';
+            return $result['params'] ?? [];
+        }
+
+        return $this->fallbackRoute($request);
+    }
+
+    /** Fallback : convention Controller/Action extraite de l'URI. */
+    protected function fallbackRoute(string $request): array
+    {
+        $params               = explode('/', $request);
+        $this->controllerName = array_shift($params);
+        if (array_key_exists(0, $this->args) && !is_numeric($params[0] ?? '')) {
+            $this->action = array_shift($this->args);
+        }
+        return $params;
+    }
+
+    /**
+     * Instancie le contrôleur et exécute l'action.
+     * Retourne false si le contrôleur ou l'action n'existe pas (404).
+     */
+    protected function dispatchController(array $params): bool
+    {
+        $className = '\G4\Api\Controller\\' . ucfirst($this->controllerName);
+        $method    = strtolower($this->method) . ucfirst($this->action) . 'Action';
+
+        if (!class_exists($className) || !method_exists($className, $method)) {
+            $this->code     = 404;
+            $this->response = $this->getHttpCodeMessage(404);
+            return false;
+        }
+
+        if ($this->args !== []) {
+            foreach ($this->args as $key => $value) {
+                $params[$key] = $value;
+            }
+        }
+
+        $this->controller = new $className;
+        if ($params !== []) {
+            $this->controller->setParams($params);
+        }
+
+        try {
+            $this->response = $this->controller->$method();
+        } catch (\Exception $exception) {
+            error_log('[API Dispatch] ' . $exception->getMessage() . ' in ' . $exception->getFile() . ':' . $exception->getLine());
+            $this->response = 'Internal Server Error';
+        }
+
+        return true;
+    }
+
     /** Encode la réponse dans le format de contenu configuré (JSON par défaut). */
     public function getFormatedResponseForContent(): string
     {
-        if ($this->response === null || $this->response === '' || $this->response === []) {
+        if (in_array($this->response, [null, '', []], strict: true)) {
             return '';
         }
+
         return match (true) {
             str_contains($this->contentType, 'text/markdown') => $this->toMarkdown($this->response),
             default                                            => json_encode($this->response, JSON_PRETTY_PRINT),
@@ -209,32 +246,32 @@ class Api
 
     /**
      * Convertit récursivement un scalaire ou un tableau en Markdown.
-     * Les tableaux associatifs produisent du Markdown structuré (titres + bold keys) ;
-     * les listes séquentielles produisent des listes à puces.
      */
     private function toMarkdown(mixed $data, int $depth = 0): string
     {
         if (!is_array($data)) {
             return (string) $data;
         }
+
         $lines  = [];
         $isList = array_is_list($data);
         foreach ($data as $key => $value) {
-            if (is_array($value)) {
-                $heading = str_repeat('#', min($depth + 2, 6));
-                $lines[] = $isList
-                    ? $this->toMarkdown($value, $depth + 1)
-                    : "$heading $key\n\n" . $this->toMarkdown($value, $depth + 1);
-            } else {
-                $lines[] = $isList ? "- $value" : "**$key** : $value";
+            if (!is_array($value)) {
+                $lines[] = $isList ? '- ' . $value : sprintf('**%s** : %s', $key, $value);
+                continue;
             }
+
+            $heading = str_repeat('#', min($depth + 2, 6));
+            $lines[] = $isList
+                ? $this->toMarkdown($value, $depth + 1)
+                : "{$heading} {$key}\n\n" . $this->toMarkdown($value, $depth + 1);
         }
+
         return implode("\n", $lines);
     }
 
     /**
      * Envoie les headers puis le corps de la réponse et termine le processus.
-     * Pour HEAD, vide le buffer de sortie conformément à la RFC.
      */
     public function sendResponse(): never
     {
@@ -250,9 +287,6 @@ class Api
 
     /**
      * Peuple $args depuis le corps de la requête selon la méthode HTTP.
-     * Détecte automatiquement application/json et parse le corps en conséquence.
-     * Note : strip_tags/trim ne constituent pas une protection contre l'injection SQL —
-     * les modèles utilisent des requêtes préparées à cet effet.
      */
     protected function cleanRequest(string $method): void
     {
@@ -262,42 +296,46 @@ class Api
             'POST'  => $this->cleanInputs($isJson
                 ? (json_decode(file_get_contents('php://input'), true) ?? [])
                 : $_POST),
-            'PUT'   => $this->cleanInputs((function () use ($isJson): array {
-                $raw = file_get_contents('php://input');
-                if ($isJson) {
-                    return json_decode($raw, true) ?? [];
-                }
-                parse_str($raw, $data);
-                return $data;
-            })()),
+            'PUT'   => $this->cleanInputs($this->parsePutBody()),
             default => $this->cleanInputs($this->args),
         };
+    }
+
+    /** Parse le corps d'une requête PUT (JSON ou form-encoded). */
+    protected function parsePutBody(): array
+    {
+        $raw = file_get_contents('php://input');
+        $isJson = str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json');
+        if ($isJson) {
+            return json_decode($raw, true) ?? [];
+        }
+        parse_str($raw, $data);
+        return $data;
     }
 
     /** Supprime les balises HTML et les espaces superflus de façon récursive. */
     protected function cleanInputs(mixed $data): mixed
     {
         if (is_array($data)) {
-            return array_map(fn(mixed $v): mixed => $this->cleanInputs($v), $data);
+            return array_map($this->cleanInputs(...), $data);
         }
+
         return trim(strip_tags((string) $data));
     }
 
-    /** Retourne le libellé HTTP associé au code, ou 'Internal Server Error' si inconnu. */
+    /** Retourne le libellé HTTP associé au code. */
     protected function getHttpCodeMessage(int $code = 500): string
     {
         return self::HTTP_MESSAGES[$code] ?? self::HTTP_MESSAGES[500];
     }
 
-    /**
-     * Écrit les headers HTTP de la réponse avec une politique de non-cache.
-     * Sans effet si les headers ont déjà été envoyés (ex. pendant les tests).
-     */
+    /** Écrit les headers HTTP de la réponse avec une politique de non-cache. */
     protected function responseHeader(): void
     {
         if (headers_sent()) {
             return;
         }
+
         header('HTTP/1.1 ' . $this->code . ' ' . $this->getHttpCodeMessage($this->code));
         header('Content-Type: ' . $this->contentType);
         header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
@@ -306,21 +344,21 @@ class Api
         header('Pragma: no-cache');
     }
 
-    /**
-     * Retourne les headers HTTP de la requête de façon portable.
-     * Utilise getallheaders() si disponible (Apache/FPM), sinon reconstruit depuis $_SERVER.
-     */
+    /** Retourne les headers HTTP de la requête de façon portable. */
     private function getRequestHeaders(): array
     {
         if (function_exists('getallheaders')) {
-            return getallheaders() ?: [];
+            return getallheaders() ?? [];
         }
+
         $headers = [];
         foreach ($_SERVER as $key => $value) {
-            if (str_starts_with($key, 'HTTP_')) {
-                $headers[str_replace('_', '-', ucwords(strtolower(substr($key, 5)), '_'))] = $value;
+            if (!str_starts_with((string) $key, 'HTTP_')) {
+                continue;
             }
+            $headers[str_replace('_', '-', ucwords(strtolower(substr((string) $key, 5)), '_'))] = $value;
         }
+
         return $headers;
     }
 }

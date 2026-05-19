@@ -19,6 +19,7 @@ class User extends ControllerAbstract
             $this->setCode(404);
             return 'No user found';
         }
+
         return $user->toArray();
     }
 
@@ -33,6 +34,7 @@ class User extends ControllerAbstract
             $this->setCode(404);
             return 'No user found';
         }
+
         return $user->getTask()->toArray();
     }
 }

@@ -8,7 +8,8 @@ namespace G4\Api\Controller;
 abstract class ControllerAbstract implements ControllerInterface
 {
     protected array $params = [];
-    protected int   $code   = 200;
+
+    protected int $code = 200;
 
     abstract public function getIndexAction(): mixed;
 

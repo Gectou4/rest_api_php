@@ -8,7 +8,9 @@ namespace G4\Api\Model;
 class User extends ModelAbstract
 {
     protected string $email = '';
-    protected string $name  = '';
+
+    protected string $name = '';
+
     protected string $table = 'user';
 
     /**
@@ -22,19 +24,15 @@ class User extends ModelAbstract
         if ($this->loaded) {
             return;
         }
+
         $this->setId($id);
-        $sth = $this->db->query(sprintf(
-            'SELECT email, name FROM %s WHERE user_id = %d',
-            $this->table,
-            $this->getId()
-        ));
-        if ($sth) {
-            $result = $sth->fetch(\PDO::FETCH_ASSOC);
-            if ($result) {
-                $this->setName($result['name']);
-                $this->setEmail($result['email']);
-                $this->loaded = true;
-            }
+        $sth = $this->db->prepare('SELECT email, name FROM `' . $this->table . '` WHERE user_id = ?');
+        $sth->execute([$this->getId()]);
+        $result = $sth->fetch(\PDO::FETCH_ASSOC);
+        if ($result) {
+            $this->setName($result['name']);
+            $this->setEmail($result['email']);
+            $this->loaded = true;
         }
     }
 
@@ -69,8 +67,8 @@ class User extends ModelAbstract
     {
         return [
             'user_id' => $this->getId(),
-            'name'    => $this->getName(),
-            'email'   => $this->getEmail(),
+            'name' => $this->getName(),
+            'email' => $this->getEmail(),
         ];
     }
 }

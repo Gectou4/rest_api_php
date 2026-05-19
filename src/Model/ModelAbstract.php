@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace G4\Api\Model;
 
-use G4\Api\App\DB as DB;
+use G4\Api\App\DB;
 
 /**
  * Classe de base pour tous les modèles.
@@ -12,11 +12,15 @@ use G4\Api\App\DB as DB;
  */
 abstract class ModelAbstract
 {
-    protected int    $id       = 0;
-    protected string $table    = '';
+    protected int $id = 0;
+
+    protected string $table = '';
+
     protected string $dbserver = 'master';
-    protected ?\PDO  $db       = null;
-    protected bool   $loaded   = false;
+
+    protected ?\PDO $db = null;
+
+    protected bool $loaded = false;
 
     /**
      * Acquiert la connexion PDO et charge l'objet si un id > 0 est fourni.
@@ -36,9 +40,10 @@ abstract class ModelAbstract
         return $this->id;
     }
 
-    public function setId(int $id): void
+    public function setId(int $id): static
     {
         $this->id = $id;
+        return $this;
     }
 
     /** Retourne true uniquement si load() a trouvé et hydraté un enregistrement. */
@@ -51,17 +56,21 @@ abstract class ModelAbstract
      * Sérialisation générique : itère les propriétés publiques en excluant les propriétés techniques.
      * Les sous-classes doivent surcharger cette méthode pour un rendu précis,
      * car les propriétés protected ne sont pas accessibles via foreach($this).
+     *
+     * @mago-ignore analysis:non-traversable-iteration
      */
     public function toArray(): array
     {
         $protected = ['table' => true, 'dbserver' => true, 'db' => true, 'loaded' => true];
-        $return    = [];
+        $return = [];
 
         foreach ($this as $key => $value) {
-            if (!($protected[$key] ?? false)) {
-                $return[$key] = $value instanceof self ? $value->toArray() : $value;
+            if ($protected[$key] ?? false) {
+                continue;
             }
+            $return[$key] = $value instanceof self ? $value->toArray() : $value;
         }
+
         return $return;
     }
 
