@@ -128,6 +128,7 @@ class UserTask extends ModelAbstract
     /** Retourne les task_id actuellement en base pour cet utilisateur. */
     protected function getCurrentTaskIds(): array
     {
+        \assert($this->db instanceof \PDO, 'Database connection must be established');
         $sth = $this->db->prepare('SELECT task_id FROM `user_task` WHERE user_id = ?');
         $sth->execute([$this->userId]);
         return array_map(static fn(array $row): int => (int) $row['task_id'], $sth->fetchAll(\PDO::FETCH_ASSOC));
@@ -169,6 +170,7 @@ class UserTask extends ModelAbstract
             return;
         }
 
+        \assert($this->db instanceof \PDO, 'Database connection must be established');
         $this->userId = $userId;
         $sth = $this->db->prepare('
             SELECT t.task_id, t.status, t.title, t.description, t.creation_date
@@ -181,9 +183,9 @@ class UserTask extends ModelAbstract
             $task = new Task();
             $task->setId((int) $row['task_id'])
                 ->setStatus((int) $row['status'])
-                ->setTitle($row['title'])
-                ->setDescription($row['description'])
-                ->setCreationDate($row['creation_date']);
+                ->setTitle((string) $row['title'])
+                ->setDescription((string) $row['description'])
+                ->setCreationDate((string) $row['creation_date']);
             $this->taskList[$task->getId()] = $task;
         }
 

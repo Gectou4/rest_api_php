@@ -231,7 +231,6 @@ class Task extends ModelAbstract
             }
         } catch (\PDOException $e) {
             error_log('[Task::getAll] ' . $e->getMessage());
-            // @mago-expect lint:no-empty-catch-clause
         }
 
         return $taskList;

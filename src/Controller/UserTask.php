@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace G4\Api\Controller;
 
+use G4\Api\App\Validator;
+
 /** Contrôleur pour les associations utilisateur-tâche. */
 class UserTask extends ControllerAbstract
 {
@@ -13,7 +15,6 @@ class UserTask extends ControllerAbstract
         return $this->ok([]);
     }
 
-    /** Alias POST → délègue à putAddTaskToUserAction(). */
     public function postAddTaskToUserAction(): mixed
     {
         return $this->putAddTaskToUserAction();
@@ -22,8 +23,16 @@ class UserTask extends ControllerAbstract
     /** Associe une tâche existante à un utilisateur existant. */
     public function putAddTaskToUserAction(): mixed
     {
-        $userId = (int) $this->getParam('userId');
-        $taskId = (int) $this->getParam('taskId');
+        $v = new Validator($this->getParams());
+        $v->required('userId')->int()->end();
+        $v->required('taskId')->int()->end();
+
+        if ($v->fails()) {
+            return $this->fail($v->firstError(), 400);
+        }
+
+        $userId = (int) $v->get('userId');
+        $taskId = (int) $v->get('taskId');
 
         $this->requireUser($userId);
         $this->requireTask($taskId);
@@ -42,8 +51,16 @@ class UserTask extends ControllerAbstract
      */
     public function deleteUserTaskAction(): mixed
     {
-        $userId = (int) $this->getParam('userId');
-        $taskId = (int) $this->getParam('taskId');
+        $v = new Validator($this->getParams());
+        $v->required('userId')->int()->end();
+        $v->required('taskId')->int()->end();
+
+        if ($v->fails()) {
+            return $this->fail($v->firstError(), 400);
+        }
+
+        $userId = (int) $v->get('userId');
+        $taskId = (int) $v->get('taskId');
 
         $this->requireUser($userId);
 
