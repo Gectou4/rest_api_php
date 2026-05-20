@@ -87,8 +87,9 @@ class UserTask extends ModelAbstract
     }
 
     /**
-     * Remplace toutes les associations dans une transaction :
-     * supprime puis réinsère les tâches de la liste courante.
+     * Synchronise les associations user-task en ne modifiant que les différences.
+     * Au lieu de DELETE + ré-INSERT tout, calcule le diff et applique uniquement
+     * les INSERT (nouvelles tâches) et DELETE (tâches retirées).
      */
     public function save(): bool
     {
@@ -96,15 +97,25 @@ class UserTask extends ModelAbstract
         try {
             $this->db->beginTransaction();
 
-            $sth = $this->db->prepare('DELETE FROM `user_task` WHERE user_id = ?');
-            $sth->execute([$this->userId]);
+            $currentIds = $this->getCurrentTaskIds();
+            $desiredIds = array_keys($this->taskList);
 
-            $sth = $this->db->prepare('INSERT INTO `user_task` (`user_id`, `task_id`) VALUES (?, ?)');
-            foreach (array_keys($this->taskList) as $taskId) {
-                $sth->execute([$this->userId, $taskId]);
+            $toAdd = array_diff($desiredIds, $currentIds);
+            $toRemove = array_diff($currentIds, $desiredIds);
+
+            if ($toRemove !== []) {
+                $placeholders = implode(',', array_fill(0, count($toRemove), '?'));
+                $sth = $this->db->prepare('DELETE FROM `user_task` WHERE user_id = ? AND task_id IN (' . $placeholders . ')');
+                $sth->execute(array_merge([$this->userId], $toRemove));
             }
 
-            $sth->closeCursor();
+            if ($toAdd !== []) {
+                $sth = $this->db->prepare('INSERT INTO `user_task` (`user_id`, `task_id`) VALUES (?, ?)');
+                foreach ($toAdd as $taskId) {
+                    $sth->execute([$this->userId, $taskId]);
+                }
+            }
+
             return $this->db->commit();
 
         } catch (\PDOException $e) {
@@ -112,6 +123,14 @@ class UserTask extends ModelAbstract
             error_log('[UserTask::save] ' . $e->getMessage());
             return false;
         }
+    }
+
+    /** Retourne les task_id actuellement en base pour cet utilisateur. */
+    protected function getCurrentTaskIds(): array
+    {
+        $sth = $this->db->prepare('SELECT task_id FROM `user_task` WHERE user_id = ?');
+        $sth->execute([$this->userId]);
+        return array_map(static fn(array $row): int => (int) $row['task_id'], $sth->fetchAll(\PDO::FETCH_ASSOC));
     }
 
     /** Supprime une seule association user-task dans une transaction atomique. */
