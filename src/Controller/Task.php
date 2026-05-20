@@ -69,11 +69,7 @@ class Task extends ControllerAbstract
             throw new \Exception('Id of task to edit is required');
         }
 
-        $task = new \G4\Api\Model\Task((int) $id);
-        if (!$task->isLoaded()) {
-            $this->setCode(400);
-            throw new \Exception('Task not found');
-        }
+        $task = $this->requireTask((int) $id);
 
         $title = $this->getParam('title');
         $description = $this->getParam('description');
@@ -98,20 +94,14 @@ class Task extends ControllerAbstract
      */
     public function deleteTaskAction(): mixed
     {
-        $this->setCode(500);
-
         $id = (int) $this->getParam('id');
-
-        $task = new \G4\Api\Model\Task($id);
-        if (!$task->isLoaded()) {
-            $this->setCode(400);
-            return 'Task [' . $id . '] not exists';
-        }
+        $task = $this->requireTask($id);
 
         if ($task->delete()) {
             return 1;
         }
 
+        $this->setCode(500);
         return 'Unable to delete Task';
     }
 }

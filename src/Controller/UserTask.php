@@ -21,32 +21,21 @@ class UserTask extends ControllerAbstract
 
     /**
      * Associe une tâche existante à un utilisateur existant.
-     * Valide l'existence des deux entités avant de créer le lien.
      */
     public function putAddTaskToUserAction(): mixed
     {
-        $this->setCode(500);
-
         $userId = (int) $this->getParam('userId');
         $taskId = (int) $this->getParam('taskId');
 
-        $user = new \G4\Api\Model\User($userId);
-        if (!$user->isLoaded()) {
-            $this->setCode(400);
-            return 'User [' . $userId . '] not exists';
-        }
-
-        $task = new \G4\Api\Model\Task($taskId);
-        if (!$task->isLoaded()) {
-            $this->setCode(400);
-            return 'Task [' . $taskId . '] not exists';
-        }
+        $this->requireUser($userId);
+        $this->requireTask($taskId);
 
         $userTask = new \G4\Api\Model\UserTask($userId);
         if ($userTask->addTask($taskId)->save()) {
             return 1;
         }
 
+        $this->setCode(500);
         return 'Unable to add Task to user';
     }
 
@@ -56,16 +45,10 @@ class UserTask extends ControllerAbstract
      */
     public function deleteUserTaskAction(): mixed
     {
-        $this->setCode(500);
-
         $userId = (int) $this->getParam('userId');
         $taskId = (int) $this->getParam('taskId');
 
-        $user = new \G4\Api\Model\User($userId);
-        if (!$user->isLoaded()) {
-            $this->setCode(400);
-            return 'User [' . $userId . '] not exists';
-        }
+        $this->requireUser($userId);
 
         $userTask = new \G4\Api\Model\UserTask($userId);
 
@@ -74,6 +57,7 @@ class UserTask extends ControllerAbstract
                 return 1;
             }
 
+            $this->setCode(500);
             return 'Unable to delete Task of user';
         }
 
