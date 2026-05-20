@@ -107,8 +107,9 @@ class UserTask extends ModelAbstract
             $sth->closeCursor();
             return $this->db->commit();
 
-        } catch (\Exception) {
+        } catch (\PDOException $e) {
             $this->db->rollBack();
+            error_log('[UserTask::save] ' . $e->getMessage());
             return false;
         }
     }
@@ -125,8 +126,9 @@ class UserTask extends ModelAbstract
 
             return $this->db->commit();
 
-        } catch (\Exception) {
+        } catch (\PDOException $e) {
             $this->db->rollBack();
+            error_log('[UserTask::deleteUserTask] ' . $e->getMessage());
             return false;
         }
     }
