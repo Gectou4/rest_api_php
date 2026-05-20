@@ -10,7 +10,7 @@ class UserTask extends ControllerAbstract
     #[\Override]
     public function getIndexAction(): mixed
     {
-        return [];
+        return $this->ok([]);
     }
 
     /** Alias POST → délègue à putAddTaskToUserAction(). */
@@ -19,9 +19,7 @@ class UserTask extends ControllerAbstract
         return $this->putAddTaskToUserAction();
     }
 
-    /**
-     * Associe une tâche existante à un utilisateur existant.
-     */
+    /** Associe une tâche existante à un utilisateur existant. */
     public function putAddTaskToUserAction(): mixed
     {
         $userId = (int) $this->getParam('userId');
@@ -32,16 +30,15 @@ class UserTask extends ControllerAbstract
 
         $userTask = new \G4\Api\Model\UserTask($userId);
         if ($userTask->addTask($taskId)->save()) {
-            return 1;
+            return $this->ok(1);
         }
 
-        $this->setCode(500);
-        return 'Unable to add Task to user';
+        return $this->fail('Unable to add Task to user', 500);
     }
 
     /**
      * Retire l'association entre un utilisateur et une tâche.
-     * Idempotente : retourne 1 même si la tâche n'était pas dans la liste de l'utilisateur.
+     * Idempotente : retourne 1 même si la tâche n'était pas dans la liste.
      */
     public function deleteUserTaskAction(): mixed
     {
@@ -54,13 +51,12 @@ class UserTask extends ControllerAbstract
 
         if ($userTask->hasTask($taskId)) {
             if ($userTask->removeTask($taskId)->save()) {
-                return 1;
+                return $this->ok(1);
             }
 
-            $this->setCode(500);
-            return 'Unable to delete Task of user';
+            return $this->fail('Unable to delete Task of user', 500);
         }
 
-        return 1;
+        return $this->ok(1);
     }
 }

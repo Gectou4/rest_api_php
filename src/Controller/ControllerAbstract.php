@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace G4\Api\Controller;
 
+use G4\Api\App\ApiResponse;
 use G4\Api\Model\Task;
 use G4\Api\Model\User;
 
@@ -43,6 +44,19 @@ abstract class ControllerAbstract implements ControllerInterface
     public function setCode(int $code): void
     {
         $this->code = $code;
+    }
+
+    /** Retourne une réponse de succès enveloppée. */
+    protected function ok(mixed $data = null): array
+    {
+        return ApiResponse::success($data);
+    }
+
+    /** Retourne une réponse d'erreur enveloppée. */
+    protected function fail(string $message, int $code = 400): array
+    {
+        $this->setCode($code);
+        return ApiResponse::error($message);
     }
 
     /**

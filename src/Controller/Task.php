@@ -12,8 +12,7 @@ class Task extends ControllerAbstract
     #[\Override]
     public function getIndexAction(): mixed
     {
-        $task = new \G4\Api\Model\Task();
-        return $task->getAll();
+        return $this->ok((new \G4\Api\Model\Task())->getAll());
     }
 
     /** Alias POST → délègue à putAddTaskAction(). */
@@ -22,16 +21,12 @@ class Task extends ControllerAbstract
         return $this->putAddTaskAction();
     }
 
-    /**
-     * Crée une nouvelle tâche.
-     * Retourne 201 + le tableau complet de la tâche en cas de succès.
-     */
+    /** Crée une nouvelle tâche. Retourne 201 + la tâche créée. */
     public function putAddTaskAction(): mixed
     {
         $title = $this->getParam('title');
         if ($title === '' || $title === null) {
-            $this->setCode(400);
-            throw new \Exception('Title is required');
+            return $this->fail('Title is required', 400);
         }
 
         $description = $this->getParam('description');
@@ -46,27 +41,24 @@ class Task extends ControllerAbstract
 
         if ($result) {
             $this->setCode(201);
-            return $task->toArray();
+            return $this->ok($task->toArray());
         }
 
-        $this->setCode(500);
-        return 'Unable to create new Task';
+        return $this->fail('Unable to create new Task', 500);
     }
 
-    /**
-     * Mise à jour partielle d'une tâche : les champs non fournis conservent leur valeur actuelle.
-     */
+    /** Alias POST → délègue à putEditTaskAction(). */
     public function postEditTaskAction(): mixed
     {
         return $this->putEditTaskAction();
     }
 
+    /** Mise à jour partielle d'une tâche. */
     public function putEditTaskAction(): mixed
     {
         $id = $this->getParam('id');
         if ($id === '' || $id === null) {
-            $this->setCode(400);
-            throw new \Exception('Id of task to edit is required');
+            return $this->fail('Id of task to edit is required', 400);
         }
 
         $task = $this->requireTask((int) $id);
@@ -82,26 +74,23 @@ class Task extends ControllerAbstract
             ->save();
 
         if ($saved) {
-            return 1;
+            return $this->ok(1);
         }
 
-        $this->setCode(500);
-        return 'Unable to update Task';
+        return $this->fail('Unable to update Task', 500);
     }
 
-    /**
-     * Supprime une tâche après avoir vérifié son existence.
-     */
+    /** Supprime une tâche après avoir vérifié son existence. */
     public function deleteTaskAction(): mixed
     {
         $id = (int) $this->getParam('id');
-        $task = $this->requireTask($id);
+        $this->requireTask($id);
 
+        $task = new \G4\Api\Model\Task($id);
         if ($task->delete()) {
-            return 1;
+            return $this->ok(1);
         }
 
-        $this->setCode(500);
-        return 'Unable to delete Task';
+        return $this->fail('Unable to delete Task', 500);
     }
 }

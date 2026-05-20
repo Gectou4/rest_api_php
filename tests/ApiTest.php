@@ -25,8 +25,9 @@ class ApiTest extends TestCase
         $this->assertIsString($response);
         $decode = json_decode($response, true);
         $this->assertIsArray($decode);
-        $this->assertArrayHasKey('user_id', $decode);
-        $this->assertEquals(1, $decode['user_id']);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertArrayHasKey('data', $decode);
+        $this->assertEquals(1, $decode['data']['user_id']);
     }
 
     public function testGetUserTask(): void
@@ -40,9 +41,10 @@ class ApiTest extends TestCase
         $this->assertIsString($response);
         $decode = json_decode($response, true);
         $this->assertIsArray($decode);
-        $this->assertArrayHasKey('user_id', $decode);
-        $this->assertArrayHasKey('tasks', $decode);
-        $this->assertEquals(1, $decode['user_id']);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertArrayHasKey('data', $decode);
+        $this->assertEquals(1, $decode['data']['user_id']);
+        $this->assertArrayHasKey('tasks', $decode['data']);
     }
 
     public function testAddTask(): void
@@ -59,8 +61,10 @@ class ApiTest extends TestCase
         $this->assertIsString($response);
         $decode = json_decode($response, true);
         $this->assertIsArray($decode);
-        $this->assertArrayHasKey('task_id', $decode);
-        $this->assertArrayHasKey('title', $decode);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertArrayHasKey('data', $decode);
+        $this->assertArrayHasKey('task_id', $decode['data']);
+        $this->assertArrayHasKey('title', $decode['data']);
         $this->assertEquals(201, $api->getCode());
     }
 
@@ -81,7 +85,8 @@ class ApiTest extends TestCase
 
         $this->assertIsString($response);
         $decode = json_decode($response, true);
-        $this->assertIsInt($decode);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertEquals(1, $decode['data']);
     }
 
     public function testAddTaskToUser(): void
@@ -98,7 +103,8 @@ class ApiTest extends TestCase
 
         $this->assertIsString($response);
         $decode = json_decode($response, true);
-        $this->assertIsInt($decode);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertEquals(1, $decode['data']);
     }
 
     public function testDelTaskToUser(): void
@@ -115,7 +121,8 @@ class ApiTest extends TestCase
 
         $this->assertIsString($response);
         $decode = json_decode($response, true);
-        $this->assertIsInt($decode);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertEquals(1, $decode['data']);
     }
 
     public function testDelTask(): void
@@ -132,6 +139,7 @@ class ApiTest extends TestCase
 
         $this->assertIsString($response);
         $decode = json_decode($response, true);
-        $this->assertIsInt($decode);
+        $this->assertEquals('success', $decode['status']);
+        $this->assertEquals(1, $decode['data']);
     }
 }
