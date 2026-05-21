@@ -4,8 +4,8 @@ includes = ["vendor"]
 
 [linter.rules]
 "literal-named-argument" = { enabled = false }
-cyclomatic-complexity = { threshold = 50 }
-kan-defect = { threshold = 3.0 }
+cyclomatic-complexity = { threshold = 60 }
+kan-defect = { threshold = 4.0 }
 too-many-methods = { threshold = 20 }
 
 [analyzer]

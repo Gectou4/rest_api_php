@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace G4\Api\Controller;
 
 use G4\Api\App\Validator;
+use G4\Api\Model\User as UserModel;
 
 /** Contrôleur des opérations de lecture sur les utilisateurs et leurs tâches. */
 class User extends ControllerAbstract
 {
+    /** Retourne la liste de tous les utilisateurs. */
+    public function getListAction(): mixed
+    {
+        return array_map(static fn(UserModel $u) => $u->toArray(), UserModel::loadAll());
+    }
+
     #[\Override]
     public function getIndexAction(): mixed
     {

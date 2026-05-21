@@ -8,6 +8,7 @@ on:
 
 env:
   MAGO_VERSION: '1.28.0'
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   analyze:
@@ -15,7 +16,7 @@ jobs:
     name: "Static Analysis (Mago)"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -40,7 +41,6 @@ jobs:
         run: mago analyze
 
   test:
-    needs: [analyze]
     runs-on: ubuntu-latest
     name: "Tests (PHP ${{ matrix.php-version }})"
     strategy:
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -93,18 +93,6 @@ jobs:
           DB_PWD: root
           DB_DSN: mysql:host=127.0.0.1;dbname=rest_api;charset=utf8
         run: composer exec phpunit
-
-      - name: Debug autoloader
-        if: failure()
-        run: |
-          echo "=== Files in src/Controller/ ==="
-          ls -la src/Controller/
-          echo "=== Composer classmap for UserTask ==="
-          grep -i "usertask" vendor/composer/autoload_classmap.php || echo "NOT IN CLASSMAP"
-          echo "=== PHP class existence check ==="
-          php -r "require 'vendor/autoload.php'; var_dump(class_exists('G4\Api\Controller\UserTask'));"
-          echo "=== File content check ==="
-          head -5 src/Controller/UserTask.php
 
   quality-gate:
     needs: [analyze, test]

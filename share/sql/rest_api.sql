@@ -25,8 +25,10 @@ CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(32) CHARACTER SET utf8mb4 NOT NULL,
   `email` varchar(320) CHARACTER SET ascii NOT NULL COMMENT 'RFC 2821: 64+1+255 Ci',
+  `api_token` varchar(64) CHARACTER SET ascii DEFAULT NULL,
   PRIMARY KEY (`user_id`),
-  UNIQUE KEY `email` (`email`)
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `api_token` (`api_token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -39,12 +41,13 @@ CREATE TABLE IF NOT EXISTS `user_task` (
   `user_id` int(11) unsigned NOT NULL,
   `task_id` int(11) unsigned NOT NULL,
   UNIQUE KEY `user_task` (`user_id`,`task_id`),
+  INDEX `task_id` (`task_id`),
   CONSTRAINT `fk_ut_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_ut_task` FOREIGN KEY (`task_id`) REFERENCES `task` (`task_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
-INSERT INTO `rest_api`.`user` (`user_id`, `name`, `email`) VALUES ('1', 'G4', 'gectou4@gmail.com');
+INSERT INTO `rest_api`.`user` (`user_id`, `name`, `email`, `api_token`) VALUES ('1', 'G4', 'gectou4@gmail.com', 'g4-token-2024');
 
 INSERT INTO `rest_api`.`task` (`task_id`, `title`, `description`, `creation_date`, `status`) VALUES ('1', 'Faire le café', 'Aller à la cafetière
 mettre la tasse

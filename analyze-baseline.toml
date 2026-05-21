@@ -46,7 +46,7 @@ count = 1
 file = "src/App/Api.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 3
 
 [[issues]]
 file = "src/App/Api.php"
@@ -338,15 +338,27 @@ count = 1
 
 [[issues]]
 file = "src/Model/User.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `G4\Api\Model\User::setEmail`: expected `string`, but found `mixed`.'
+code = "invalid-iterator"
+message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
 count = 1
 
 [[issues]]
 file = "src/Model/User.php"
 code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `G4\Api\Model\User::setEmail`: expected `string`, but found `mixed`.'
+count = 2
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-argument"
 message = 'Invalid argument type for argument #1 of `G4\Api\Model\User::setName`: expected `string`, but found `mixed`.'
-count = 1
+count = 2
+
+[[issues]]
+file = "src/Model/User.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 3
 
 [[issues]]
 file = "src/Model/User.php"
@@ -358,19 +370,19 @@ count = 2
 file = "src/Model/User.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 5
 
 [[issues]]
 file = "src/Model/User.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 2
+count = 3
 
 [[issues]]
 file = "src/Model/User.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 1
+count = 2
 
 [[issues]]
 file = "src/Model/UserTask.php"

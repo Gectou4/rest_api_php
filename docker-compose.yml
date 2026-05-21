@@ -4,10 +4,11 @@ services:
     ports:
       - "8080:80"
     environment:
+      ALLOWED_ORIGINS: '*'
       DB_HOST: db
       DB_USER: root
-      DB_PASSWORD: root
-      DB_DSN: mysql:host=db;dbname=rest_api;charset=utf8
+      DB_PWD: root
+      DB_DSN: mysql:host=db;dbname=rest_api;charset=utf8mb4
     depends_on:
       db:
         condition: service_healthy
@@ -38,7 +39,7 @@ services:
       DB_HOST: db
       DB_USER: root
       DB_PWD: root
-      DB_DSN: mysql:host=db;dbname=rest_api;charset=utf8
+      DB_DSN: mysql:host=db;dbname=rest_api;charset=utf8mb4
     depends_on:
       db:
         condition: service_healthy

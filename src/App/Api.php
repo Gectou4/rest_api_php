@@ -196,6 +196,52 @@ class Api
     }
 
     /**
+     * Vérifie l'authentification pour les méthodes d'écriture (POST/PUT/DELETE).
+     * Sauf pour le contrôleur Auth (login) qui est public.
+     */
+    protected function authenticateRequest(): bool
+    {
+        if ($this->controllerName === 'Auth') {
+            return true;
+        }
+
+        if (!in_array($this->method, ['POST', 'PUT', 'DELETE'], true)) {
+            return true;
+        }
+
+        $header = $this->getAuthorizationHeader();
+        if ($header === null || !str_starts_with($header, 'Bearer ')) {
+            return false;
+        }
+
+        $token = substr($header, 7);
+        if ($token === '') {
+            return false;
+        }
+
+        $userId = \G4\Api\Model\User::loadByToken($token);
+        if ($userId === null || $userId <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /** Extrait le header Authorization de façon portable. */
+    private function getAuthorizationHeader(): ?string
+    {
+        foreach (['HTTP_AUTHORIZATION', 'REDIRECT_HTTP_AUTHORIZATION'] as $key) {
+            if (array_key_exists($key, $_SERVER)) {
+                return $_SERVER[$key];
+            }
+        }
+
+        $headers = $this->getRequestHeaders();
+        $value = $headers['Authorization'] ?? null;
+        return is_string($value) ? $value : null;
+    }
+
+    /**
      * Instancie le contrôleur et exécute l'action.
      * Retourne false si le contrôleur ou l'action n'existe pas (404).
      */
@@ -207,6 +253,12 @@ class Api
         if (!class_exists($className) || !method_exists($className, $method)) {
             $this->code     = 404;
             $this->response = $this->getHttpCodeMessage(404);
+            return false;
+        }
+
+        if (!$this->authenticateRequest()) {
+            $this->code     = 401;
+            $this->response = ApiResponse::error('Authentication required');
             return false;
         }
 
@@ -313,14 +365,14 @@ class Api
         return $data;
     }
 
-    /** Supprime les balises HTML et les espaces superflus de façon récursive. */
+    /** Nettoie les entrées récursivement (trim, pas de strip_tags pour éviter la perte de données). */
     protected function cleanInputs(mixed $data): mixed
     {
         if (is_array($data)) {
             return array_map($this->cleanInputs(...), $data);
         }
 
-        return trim(strip_tags((string) $data));
+        return trim((string) $data);
     }
 
     /** Retourne le libellé HTTP associé au code. */
