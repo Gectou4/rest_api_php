@@ -2,6 +2,21 @@
 
 API REST légère en PHP, sans framework, avec sortie JSON (ou Markdown via `Accept: text/markdown`).
 
+[![CI](https://github.com/Gectou4/rest_api_php/actions/workflows/ci.yml/badge.svg)](https://github.com/Gectou4/rest_api_php/actions/workflows/ci.yml)
+
+> **Part of the G4Api series.** The same small API (users, tasks and their N:N link) built in several stacks, to compare ecosystems: language, tooling, tests, static analysis and CI. Learning project, built in May 2026 with the help of an AI coding assistant. The PHP version is the reference.
+>
+> | Stack                | Repository                                                              |
+> | -------------------- | ----------------------------------------------------------------------- |
+> | PHP 8 (no framework) | [rest_api_php](https://github.com/Gectou4/rest_api_php) (this repo)     |
+> | Go                   | [rest_api_go](https://github.com/Gectou4/rest_api_go)                   |
+> | Rust (axum, sqlx)    | [rest_api_rs](https://github.com/Gectou4/rest_api_rs)                   |
+> | Java 21 (Jersey)     | [rest_api_java](https://github.com/Gectou4/rest_api_java)               |
+> | .NET 8 (Dapper)      | [rest_api_netcsharp](https://github.com/Gectou4/rest_api_netcsharp)     |
+> | Python (Flask)       | [rest_api_python](https://github.com/Gectou4/rest_api_python)           |
+> | Node.js (Express)    | [rest_api_nodejs](https://github.com/Gectou4/rest_api_nodejs)           |
+> | React front-end      | [rest_api_front_react](https://github.com/Gectou4/rest_api_front_react) |
+
 Elle présente un exemple où on gère deux types d'objets et leurs relations :
 
 | Objet  | Champs |
